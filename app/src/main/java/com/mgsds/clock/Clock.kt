@@ -9,7 +9,6 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
-import android.widget.*
 import java.util.*
 import kotlin.math.min
 
@@ -17,28 +16,124 @@ class Clock(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
     private var mCentreX = 0F
     private var mCentreY = 0F
     private var mRadius = 0F
-    private var mPaint: Paint = Paint()
+    private var mPadding = 0F
+    private var mPinRadius = 0F
     private var mInitialized = false
-    private val mColor: Int = Color.BLACK
-    private val mHandsColor: Int = Color.GRAY
-    private var mLineWidth = 15F
-    private val mRect = Rect()
-    private val mBgColor: Int = Color.WHITE
+
+    private val mDialTagsColor: Int = Color.BLACK
+    private val mHandsColor: Int = Color.DKGRAY
     private val mSecondsHandColor : Int = Color.RED
-    private var mHourHangAngle = 0f
-    private var mMinuteHangAngle = 0f
-    private var mSecondsHangAngle = 0f
+    private val mDialBgColor : Int = Color.WHITE
+    private val mDialOutlineColor : Int = Color.BLACK
+    private val mPinColor : Int = Color.WHITE
+
+    private var mHoursHandPaint: Paint = Paint()
+    private var mMinutesHandPaint: Paint = Paint()
+    private var mSecondsHandPaint: Paint = Paint()
+    private var mPrimaryDialTagsPaint: Paint = Paint()
+    private var mSecondaryDialTagsPaint: Paint = Paint()
+    private var mDialOutlinePaint: Paint = Paint()
+    private var mDialBgPaint: Paint = Paint()
+    private var mPinPaint: Paint = Paint()
+
+    private var mDialOutlineLineWidth = 0f
+    private var mDialPrimaryTagsLineWidth = 0f
+    private var mDialSecondaryTagsLineWidth = 0f
+    private var mHoursHandLineWidth = 0f
+    private var mMinutesHandLineWidth = 0f
+    private var mSecondsHandLineWidth = 0f
+
+    private val mPrimaryTagsRect = Rect()
+    private val mSecondaryTagsRect = Rect()
+    private val mHoursHandRect = Rect()
+    private val mMinutesHandRect = Rect()
+    private val mSecondsHandRect = Rect()
+
+    private var mHoursHandAngle = 0f
+    private var mMinutesHandAngle = 0f
+    private var mSecondsHandAngle = 0f
 
     private fun init() {
         if (mInitialized)
             return
 
+        mDialOutlineLineWidth = min(width, height) * 0.01f
+        mDialPrimaryTagsLineWidth = mDialOutlineLineWidth * 1.5f
+        mDialSecondaryTagsLineWidth = mDialOutlineLineWidth
+        mHoursHandLineWidth = mDialOutlineLineWidth * 2f
+        mMinutesHandLineWidth = mDialOutlineLineWidth
+        mSecondsHandLineWidth = mDialOutlineLineWidth * 0.75f
+
         mCentreX = width.toFloat() / 2
         mCentreY = height.toFloat() / 2
+        mPadding = mDialOutlineLineWidth / 2
+        mRadius = min(mCentreX, mCentreY) - mPadding
+        mPinRadius = mRadius / 60
+
+
+
+        mDialOutlinePaint.color = mDialOutlineColor
+        mDialOutlinePaint.style = Paint.Style.STROKE
+        mDialOutlinePaint.strokeWidth = mDialOutlineLineWidth
+        mDialOutlinePaint.isAntiAlias = true
+
+        mDialBgPaint.color = mDialBgColor
+        mDialBgPaint.style = Paint.Style.FILL
+        mDialBgPaint.isAntiAlias = true
+
+        mPrimaryDialTagsPaint.color = mDialTagsColor
+        mPrimaryDialTagsPaint.style = Paint.Style.FILL_AND_STROKE
+        mPrimaryDialTagsPaint.strokeWidth = mDialPrimaryTagsLineWidth
+        mPrimaryDialTagsPaint.isAntiAlias = true
+
+        mSecondaryDialTagsPaint.color = mDialTagsColor
+        mSecondaryDialTagsPaint.style = Paint.Style.FILL_AND_STROKE
+        mSecondaryDialTagsPaint.strokeWidth = mDialSecondaryTagsLineWidth
+        mSecondaryDialTagsPaint.isAntiAlias = true
+
+        mHoursHandPaint.color = mHandsColor
+        mHoursHandPaint.style = Paint.Style.STROKE;
+        mHoursHandPaint.strokeWidth = mHoursHandLineWidth;
+        mHoursHandPaint.isAntiAlias = true;
+
+
+        mMinutesHandPaint.color = mHandsColor
+        mMinutesHandPaint.style = Paint.Style.STROKE;
+        mMinutesHandPaint.strokeWidth = mMinutesHandLineWidth;
+        mMinutesHandPaint.isAntiAlias = true;
+
+        mSecondsHandPaint.color = mSecondsHandColor
+        mSecondsHandPaint.style = Paint.Style.STROKE;
+        mSecondsHandPaint.strokeWidth = mSecondsHandLineWidth;
+        mSecondsHandPaint.isAntiAlias = true;
+
+        mPinPaint.color = mPinColor
+        mPinPaint.style = Paint.Style.FILL
+        mSecondsHandPaint.isAntiAlias = true;
+
+
+        val x1 = mCentreX - mRadius
+        var x2 = mCentreX - mRadius + mRadius / 6
+        val y = mCentreY
+        mPrimaryTagsRect.set(x1.toInt(), y.toInt(), x2.toInt(), y.toInt())
+
+        x2 = mCentreX - mRadius + mRadius / 8
+        mSecondaryTagsRect.set(x1.toInt(), y.toInt(), x2.toInt(), y.toInt())
+
+        setHandRect(mHoursHandRect, mRadius/3*2, mRadius/10)
+        setHandRect(mMinutesHandRect, mRadius * 1.15f, mRadius/5)
+        setHandRect(mSecondsHandRect, mRadius * 1.15f, mRadius/5)
+
         mInitialized = true
-        mRadius = min(mCentreX, mCentreY) - mLineWidth / 2
-        mInitialized = true
-        mLineWidth = min(width, height) * 0.01f
+
+    }
+
+    private fun setHandRect(rect: Rect, length: Float, offset: Float)
+    {
+        val y1 = mCentreY + offset
+        val y2 = mCentreY - (length - offset)
+        val x = mCentreX
+        rect.set(x.toInt(), y1.toInt(), x.toInt(), y2.toInt())
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -47,17 +142,11 @@ class Clock(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
         if (!mInitialized)
             init()
 
-        val currentTimestamp = System.currentTimeMillis()
-        val calendar = Calendar.getInstance()
-        calendar.timeZone = TimeZone.getTimeZone("Europe/Moscow")
-        calendar.timeInMillis = currentTimestamp
-
-        setHandsPosition(calendar)
+        setHandsPosition(Calendar.getInstance())
         drawDial(canvas)
         drawHands(canvas)
 
-        postInvalidateDelayed(500);
-        invalidate();
+        postInvalidateDelayed(1000);
     }
 
     private fun drawDial(canvas: Canvas?) {
@@ -66,40 +155,19 @@ class Clock(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
     }
 
     private fun drawCircle(canvas: Canvas?) {
-        mPaint.reset()
-        mPaint.color = mBgColor
-        mPaint.style = Paint.Style.FILL;
-        mPaint.isAntiAlias = true;
-        canvas?.drawCircle(mCentreX, mCentreY, mRadius, mPaint)
-        mPaint.strokeWidth = mLineWidth;
-        mPaint.color = mColor
-        mPaint.style = Paint.Style.STROKE;
-        mPaint.isAntiAlias = true;
-        canvas?.drawCircle(mCentreX, mCentreY, mRadius, mPaint)
+        canvas?.drawCircle(mCentreX, mCentreY, mRadius, mDialBgPaint)
+        canvas?.drawCircle(mCentreX, mCentreY, mRadius, mDialOutlinePaint)
     }
 
     private fun drawTags(canvas : Canvas?) {
-        mPaint.reset()
-        mPaint.color = mColor
-        mPaint.style = Paint.Style.STROKE;
-        mPaint.isAntiAlias = true;
-        val x1 = mCentreX - mRadius
-        val x2 = mCentreX - mRadius + mRadius / 6
-        val y = mCentreY
-        val shortX2 = mCentreX - mRadius + mRadius / 8
-
         for (i in 0 until 12) {
             val degree = 360F / 12F
             canvas?.rotate(degree, mCentreX, mCentreY)
             if (i % 3 == 2) {
-                mRect.set(x1.toInt(), y.toInt(), x2.toInt(), y.toInt())
-                mPaint.strokeWidth = mLineWidth * 2;
-                canvas?.drawRect(mRect, mPaint)
+                canvas?.drawRect(mPrimaryTagsRect, mPrimaryDialTagsPaint)
             }
             else{
-                mRect.set(x1.toInt(), y.toInt(), shortX2.toInt(), y.toInt())
-                mPaint.strokeWidth = mLineWidth;
-                canvas?.drawRect(mRect, mPaint)
+                canvas?.drawRect(mSecondaryTagsRect, mSecondaryDialTagsPaint)
             }
         }
     }
@@ -111,70 +179,40 @@ class Clock(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
         drawPin(canvas)
     }
 
-
-    private fun drawHand(canvas: Canvas?,paint: Paint, length: Float, offset: Float)
-    {
-        val y1 = mCentreY + offset
-        val y2 = mCentreY - (length - offset)
-        val x = mCentreX
-        mRect.set(x.toInt(), y1.toInt(), x.toInt(), y2.toInt())
-        canvas?.drawRect(mRect, mPaint)
+    private fun drawHand(canvas: Canvas?, angle: Float, rect: Rect, paint: Paint) {
+        canvas?.rotate(angle, mCentreX, mCentreY)
+        canvas?.drawRect(rect, paint)
+        canvas?.rotate(-angle, mCentreX, mCentreY)
     }
 
     private fun drawHourHand(canvas: Canvas?) {
-        mPaint.reset()
-        mPaint.color = mHandsColor
-        mPaint.style = Paint.Style.STROKE;
-        mPaint.strokeWidth = mLineWidth * 2;
-        mPaint.isAntiAlias = true;
-        canvas?.rotate(mHourHangAngle, mCentreX, mCentreY)
-        drawHand(canvas, mPaint, mRadius/3*2, mRadius/10)
-        canvas?.rotate(-mHourHangAngle, mCentreX, mCentreY)
+        drawHand(canvas, mHoursHandAngle, mHoursHandRect, mHoursHandPaint)
     }
 
     private fun drawMinuteHand(canvas: Canvas?) {
-        mPaint.reset()
-        mPaint.color = mHandsColor
-        mPaint.style = Paint.Style.STROKE;
-        mPaint.strokeWidth = mLineWidth;
-        mPaint.isAntiAlias = true;
-        canvas?.rotate(mMinuteHangAngle, mCentreX, mCentreY)
-        drawHand(canvas, mPaint, mRadius * 1.15f, mRadius/5)
-        canvas?.rotate(-mMinuteHangAngle, mCentreX, mCentreY)
+        drawHand(canvas, mMinutesHandAngle, mMinutesHandRect, mMinutesHandPaint)
     }
 
     private fun drawSecondsHand(canvas: Canvas?) {
-        mPaint.reset()
-        mPaint.color = mSecondsHandColor;
-        mPaint.style = Paint.Style.STROKE;
-        mPaint.strokeWidth = mLineWidth/2;
-        mPaint.isAntiAlias = true;
-        canvas?.rotate(mSecondsHangAngle, mCentreX, mCentreY)
-        drawHand(canvas, mPaint, mRadius * 1.15f, mRadius/5)
-        canvas?.rotate(-mSecondsHangAngle, mCentreX, mCentreY)
+        drawHand(canvas, mSecondsHandAngle, mSecondsHandRect, mSecondsHandPaint)
     }
 
     private fun drawPin(canvas: Canvas?) {
-        mPaint.reset()
-        mPaint.color = Color.WHITE
-        mPaint.style = Paint.Style.FILL_AND_STROKE;
-        mPaint.strokeWidth = mLineWidth/5;
-        mPaint.isAntiAlias = true;
-        canvas?.drawCircle(mCentreX, mCentreY, mRadius/60, mPaint)
+        canvas?.drawCircle(mCentreX, mCentreY, mPinRadius, mPinPaint)
     }
 
     private fun setHandsPosition(calendar: Calendar) {
-        mSecondsHangAngle = calendar.get(Calendar.SECOND) * 360f / 60f
-        mMinuteHangAngle = calendar.get(Calendar.MINUTE) * 360f / 60f + mSecondsHangAngle / 60f
-        mHourHangAngle = calendar.get(Calendar.HOUR_OF_DAY) * 360f / 12f + mMinuteHangAngle / 12f
+        mSecondsHandAngle = calendar.get(Calendar.SECOND) * 360f / 60f
+        mMinutesHandAngle = calendar.get(Calendar.MINUTE) * 360f / 60f + mSecondsHandAngle / 60f
+        mHoursHandAngle = calendar.get(Calendar.HOUR_OF_DAY) * 360f / 12f + mMinutesHandAngle / 12f
     }
 
     override fun onSaveInstanceState(): Parcelable {
         val bundle = Bundle()
         bundle.putParcelable("superState", super.onSaveInstanceState())
-        bundle.putFloat("mHourHangAngle", mHourHangAngle)
-        bundle.putFloat("mMinuteHangAngle", mMinuteHangAngle)
-        bundle.putFloat("mSecondsHangAngle", mSecondsHangAngle)
+        bundle.putFloat("mHoursHandAngle", mHoursHandAngle)
+        bundle.putFloat("mMinutesHandAngle", mMinutesHandAngle)
+        bundle.putFloat("mSecondsHandAngle", mSecondsHandAngle)
         return bundle
     }
 
@@ -182,9 +220,9 @@ class Clock(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
         if (state is Bundle)
         {
             val bundle: Bundle = state
-            this.mHourHangAngle = bundle.getFloat("mHourHangAngle")
-            this.mMinuteHangAngle = bundle.getFloat("mMinuteHangAngle")
-            this.mSecondsHangAngle = bundle.getFloat("mSecondsHangAngle")
+            this.mHoursHandAngle = bundle.getFloat("mHoursHandAngle")
+            this.mMinutesHandAngle = bundle.getFloat("mMinutesHandAngle")
+            this.mSecondsHandAngle = bundle.getFloat("mSecondsHangAngle")
         }
         super.onRestoreInstanceState(state)
     }
