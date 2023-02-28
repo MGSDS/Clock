@@ -1,13 +1,15 @@
 package com.mgsds.clock
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
+import android.os.Bundle
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
+import android.widget.*
 import java.util.*
 import kotlin.math.min
 
@@ -39,7 +41,6 @@ class Clock(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
         mLineWidth = min(width, height) * 0.01f
     }
 
-    @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
 
@@ -51,7 +52,7 @@ class Clock(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
         calendar.timeZone = TimeZone.getTimeZone("Europe/Moscow")
         calendar.timeInMillis = currentTimestamp
 
-        setTime(calendar)
+        setHandsPosition(calendar)
         drawDial(canvas)
         drawHands(canvas)
 
@@ -120,7 +121,7 @@ class Clock(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
         canvas?.drawRect(mRect, mPaint)
     }
 
-    private fun  drawHourHand (canvas: Canvas?) {
+    private fun drawHourHand(canvas: Canvas?) {
         mPaint.reset()
         mPaint.color = mHandsColor
         mPaint.style = Paint.Style.STROKE;
@@ -162,9 +163,29 @@ class Clock(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
         canvas?.drawCircle(mCentreX, mCentreY, mRadius/60, mPaint)
     }
 
-    private fun setTime(calendar: Calendar) {
+    private fun setHandsPosition(calendar: Calendar) {
         mSecondsHangAngle = calendar.get(Calendar.SECOND) * 360f / 60f
         mMinuteHangAngle = calendar.get(Calendar.MINUTE) * 360f / 60f + mSecondsHangAngle / 60f
         mHourHangAngle = calendar.get(Calendar.HOUR_OF_DAY) * 360f / 12f + mMinuteHangAngle / 12f
+    }
+
+    override fun onSaveInstanceState(): Parcelable {
+        val bundle = Bundle()
+        bundle.putParcelable("superState", super.onSaveInstanceState())
+        bundle.putFloat("mHourHangAngle", mHourHangAngle)
+        bundle.putFloat("mMinuteHangAngle", mMinuteHangAngle)
+        bundle.putFloat("mSecondsHangAngle", mSecondsHangAngle)
+        return bundle
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        if (state is Bundle)
+        {
+            val bundle: Bundle = state
+            this.mHourHangAngle = bundle.getFloat("mHourHangAngle")
+            this.mMinuteHangAngle = bundle.getFloat("mMinuteHangAngle")
+            this.mSecondsHangAngle = bundle.getFloat("mSecondsHangAngle")
+        }
+        super.onRestoreInstanceState(state)
     }
 }
