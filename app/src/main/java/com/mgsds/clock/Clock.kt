@@ -13,12 +13,13 @@ import java.util.*
 import kotlin.math.min
 
 class Clock(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
-    private var mCentreX = 0F
-    private var mCentreY = 0F
-    private var mRadius = 0F
-    private var mPadding = 0F
-    private var mPinRadius = 0F
-    private var mInitialized = false
+
+    private var mCentreX: Float = 0F
+    private var mCentreY: Float = 0F
+    private var mRadius: Float = 0F
+    private var mPadding: Float = 0F
+    private var mPinRadius: Float = 0F
+    private var mInitialized: Boolean = false
 
     private val mDialTagsColor: Int = Color.BLACK
     private val mHandsColor: Int = Color.DKGRAY
@@ -27,35 +28,40 @@ class Clock(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
     private val mDialOutlineColor : Int = Color.BLACK
     private val mPinColor : Int = Color.WHITE
 
-    private var mHoursHandPaint: Paint = Paint()
-    private var mMinutesHandPaint: Paint = Paint()
-    private var mSecondsHandPaint: Paint = Paint()
-    private var mPrimaryDialTagsPaint: Paint = Paint()
-    private var mSecondaryDialTagsPaint: Paint = Paint()
-    private var mDialOutlinePaint: Paint = Paint()
-    private var mDialBgPaint: Paint = Paint()
-    private var mPinPaint: Paint = Paint()
+    private val mHoursHandPaint: Paint = Paint()
+    private val mMinutesHandPaint: Paint = Paint()
+    private val mSecondsHandPaint: Paint = Paint()
+    private val mPrimaryDialTagsPaint: Paint = Paint()
+    private val mSecondaryDialTagsPaint: Paint = Paint()
+    private val mDialOutlinePaint: Paint = Paint()
+    private val mDialBgPaint: Paint = Paint()
+    private val mPinPaint: Paint = Paint()
 
-    private var mDialOutlineLineWidth = 0f
-    private var mDialPrimaryTagsLineWidth = 0f
-    private var mDialSecondaryTagsLineWidth = 0f
-    private var mHoursHandLineWidth = 0f
-    private var mMinutesHandLineWidth = 0f
-    private var mSecondsHandLineWidth = 0f
+    private var mDialOutlineLineWidth: Float = 0f
+    private var mDialPrimaryTagsLineWidth: Float = 0f
+    private var mDialSecondaryTagsLineWidth: Float = 0f
+    private var mHoursHandLineWidth: Float = 0f
+    private var mMinutesHandLineWidth:Float = 0f
+    private var mSecondsHandLineWidth: Float = 0f
 
-    private val mPrimaryTagsRect = Rect()
-    private val mSecondaryTagsRect = Rect()
-    private val mHoursHandRect = Rect()
-    private val mMinutesHandRect = Rect()
-    private val mSecondsHandRect = Rect()
+    private val mPrimaryTagsRect: Rect = Rect()
+    private val mSecondaryTagsRect: Rect = Rect()
+    private val mHoursHandRect: Rect = Rect()
+    private val mMinutesHandRect: Rect = Rect()
+    private val mSecondsHandRect: Rect = Rect()
 
-    private var mHoursHandAngle = 0f
-    private var mMinutesHandAngle = 0f
-    private var mSecondsHandAngle = 0f
-
+    private var mHoursHandAngle: Float = 0f
+    private var mMinutesHandAngle: Float = 0f
+    private var mSecondsHandAngle:Float = 0f
+    private var mTimer: ClockTimer = ClockTimer(this)
     private fun init() {
         if (mInitialized)
             return
+
+        if (!mTimer.isRunning) {
+            mTimer.start()
+        }
+
 
         mDialOutlineLineWidth = min(width, height) * 0.01f
         mDialPrimaryTagsLineWidth = mDialOutlineLineWidth * 1.5f
@@ -142,11 +148,8 @@ class Clock(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
         if (!mInitialized)
             init()
 
-        setHandsPosition(Calendar.getInstance())
         drawDial(canvas)
         drawHands(canvas)
-
-        postInvalidateDelayed(1000);
     }
 
     private fun drawDial(canvas: Canvas?) {
@@ -201,7 +204,7 @@ class Clock(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
         canvas?.drawCircle(mCentreX, mCentreY, mPinRadius, mPinPaint)
     }
 
-    private fun setHandsPosition(calendar: Calendar) {
+    public fun updateTime(calendar: Calendar) {
         mSecondsHandAngle = calendar.get(Calendar.SECOND) * 360f / 60f
         mMinutesHandAngle = calendar.get(Calendar.MINUTE) * 360f / 60f + mSecondsHandAngle / 60f
         mHoursHandAngle = calendar.get(Calendar.HOUR_OF_DAY) * 360f / 12f + mMinutesHandAngle / 12f
@@ -223,7 +226,7 @@ class Clock(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
             this.mHoursHandAngle = bundle.getFloat("mHoursHandAngle")
             this.mMinutesHandAngle = bundle.getFloat("mMinutesHandAngle")
             this.mSecondsHandAngle = bundle.getFloat("mSecondsHangAngle")
+            super.onRestoreInstanceState(state.getParcelable("superState"))
         }
-        super.onRestoreInstanceState(state)
     }
 }
