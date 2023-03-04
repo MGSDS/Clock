@@ -1,4 +1,4 @@
-package com.mgsds.clock
+package com.mgsds.clock.clockView
 
 import android.content.Context
 import android.graphics.Canvas

@@ -1,7 +1,6 @@
-package com.mgsds.clock
+package com.mgsds.clock.clockView
 
 import java.util.*
-import com.mgsds.clock.Clock
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 

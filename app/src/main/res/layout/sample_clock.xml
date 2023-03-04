@@ -4,7 +4,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <com.mgsds.clock.Clock
+    <com.mgsds.clock.clockView.Clock
             style="@style/Widget.Theme.Clock.MyView"
             android:layout_width="300dp"
             android:layout_height="300dp"
