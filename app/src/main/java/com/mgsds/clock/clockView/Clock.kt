@@ -5,9 +5,9 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
-import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import java.util.*
 import kotlin.math.min
@@ -54,6 +54,7 @@ class Clock(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
     private var mMinutesHandAngle: Float = 0f
     private var mSecondsHandAngle:Float = 0f
     private var mTimer: ClockTimer = ClockTimer(this)
+
     private fun init() {
         if (mInitialized)
             return
@@ -62,7 +63,7 @@ class Clock(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
             mTimer.start()
         }
 
-
+        isSaveEnabled = true
         mDialOutlineLineWidth = min(width, height) * 0.01f
         mDialPrimaryTagsLineWidth = mDialOutlineLineWidth * 1.5f
         mDialSecondaryTagsLineWidth = mDialOutlineLineWidth
@@ -131,6 +132,8 @@ class Clock(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
         setHandRect(mSecondsHandRect, mRadius * 1.15f, mRadius/5)
 
         mInitialized = true
+
+        Log.println(Log.DEBUG, "Clock", "Clock initialized")
 
     }
 
@@ -211,22 +214,24 @@ class Clock(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
     }
 
     override fun onSaveInstanceState(): Parcelable {
-        val bundle = Bundle()
-        bundle.putParcelable("superState", super.onSaveInstanceState())
-        bundle.putFloat("mHoursHandAngle", mHoursHandAngle)
-        bundle.putFloat("mMinutesHandAngle", mMinutesHandAngle)
-        bundle.putFloat("mSecondsHandAngle", mSecondsHandAngle)
-        return bundle
+        val superState = super.onSaveInstanceState()
+        val ss = ClockState(superState)
+        ss.secondsAngle = mSecondsHandAngle
+        ss.hoursAngle = mHoursHandAngle
+        ss.minutesAngle = mMinutesHandAngle
+        Log.println(Log.DEBUG, "Clock", "Clock saved $mSecondsHandAngle $mMinutesHandAngle $mHoursHandAngle")
+        return ss
     }
 
     override fun onRestoreInstanceState(state: Parcelable?) {
-        if (state is Bundle)
+        super.onRestoreInstanceState(state)
+        if (state is ClockState)
         {
-            val bundle: Bundle = state
-            this.mHoursHandAngle = bundle.getFloat("mHoursHandAngle")
-            this.mMinutesHandAngle = bundle.getFloat("mMinutesHandAngle")
-            this.mSecondsHandAngle = bundle.getFloat("mSecondsHangAngle")
-            super.onRestoreInstanceState(state.getParcelable("superState"))
+            val ss : ClockState  = state
+            this.mHoursHandAngle = ss.hoursAngle
+            this.mMinutesHandAngle = ss.minutesAngle
+            this.mSecondsHandAngle = ss.secondsAngle
+            Log.println(Log.DEBUG, "Clock", "Clock restored $mSecondsHandAngle $mMinutesHandAngle $mHoursHandAngle")
         }
     }
 }
