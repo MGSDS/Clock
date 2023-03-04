@@ -6,11 +6,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        tools:context=".activities.MainActivity">
-    <LinearLayout android:layout_width="match_parent" android:layout_height="30pt" android:orientation="horizontal">
+        tools:context=".activities.MainActivity"
+    android:orientation="vertical">
         <Button android:layout_width="match_parent" android:layout_height="30pt" android:text="@string/full_page" android:onClick="openFullPage"
                 style="?android:attr/buttonBarButtonStyle"/>
-        <Button android:layout_width="match_parent" android:layout_height="30pt" android:text="@string/multi_clock" android:onClick="openMultiClock"
+        <Button android:layout_width="match_parent" android:layout_height="30pt" android:text="@string/movable" android:onClick="openMovable"
                 style="?android:attr/buttonBarButtonStyle"/>
-    </LinearLayout>
 </LinearLayout>

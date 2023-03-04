@@ -16,6 +16,8 @@ class MainActivity : AppCompatActivity() {
         intent = Intent(this, FullPageActivity::class.java)
         startActivity(intent)
     }
-
-    fun openMultiClock(view: View) {}
+    fun openMovable(view: View) {
+        intent = Intent(this, ResizeableViewActivity::class.java)
+        startActivity(intent)
+    }
 }

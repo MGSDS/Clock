@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">Clock</string>
     <string name="full_page">full page</string>
-    <string name="multi_clock">Multi Clock</string>
+    <string name="movable">Movable clock</string>
 </resources>
